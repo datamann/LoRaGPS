@@ -17,7 +17,7 @@ void setup()
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
     rf95.setFrequency(433.00);
-    rf95.setModemConfig(RH_RF95::Bw125Cr48Sf4096);
+    rf95.setModemConfig(RH_RF95::Bw31_25Cr48Sf512);
 
   // The default transmitter power is 13dBm, using PA_BOOST.
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
