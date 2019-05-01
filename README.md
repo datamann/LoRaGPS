@@ -55,3 +55,4 @@ Include any essential instructions for:
 - IRC or Slack (if applicable)
 
 ### License
+This project is under GNU General Public License v3.0
