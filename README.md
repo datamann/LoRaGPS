@@ -5,54 +5,34 @@ Sending GPS coordinates via LoRa Radio 433MHz and 868MHz
 Please look here for documentation:
 https://aconfluence.no/x/BgA5AQ
 
-### Project Name/Intro
+### LoRaGPS/Intro
 
-- Describe very briefly but clearly what the project does.
-- State if it is out-of-the-box user-friendly, so it’s clear to the user.
-- List its most useful/innovative/noteworthy features.
-- State its goals/what problem(s) it solves.
-- Note and briefly describe any key concepts (technical, philosophical, or both) important to the user’s understanding.
-- Link to any supplementary blog posts or project main pages.
-- Note its development status.
-- Include badges.
-- If possible, include screenshots and demo videos.
+- As of now this project is only to learn how to use LoRa modules and to have radio devices to test antennas. For now I only use fabricated antennas but I will build my own.
+- End goal for this project is to control an antenna tracker, this used as an telemetry link.
 
 ### Core Technical Concepts/Inspiration
 
-- Why does it exist?
-- Frame your project for the potential user. 
-- Compare/contrast your project with other, similar projects so the user knows how it is different from those projects.
-- Highlight the technical concepts that your project demonstrates or supports. Keep it very brief.
-- Keep it useful.
+- I was not able to find a userfriendly telemetry link so I started to build my own and to learn the technology. 
+- This project are so far not really userfriendly either but the goal is to try to create a step by step user guide with a complete parts list and "How to" bullet list.
 
 ### Getting Started/Requirements/Prerequisites/Dependencies
-Include any essential instructions for:
-- Getting it
-- Installing It
-- Configuring It
-- Running it
-
-### More Specific Topics (+ sample sub-categories)
-- Versioning: Services, APIs, Systems
-- Common Error Messages/related details
-- Tests
-- Is it a Swift project? Please take a look at Mattt Thompson & Nate Cook's [Swift documentation](http://nshipster.com/swift-documentation/) guide
+- Arduino Nano
+- LoRa modules - https://www.hoperf.com/data/upload/portal/20190301/RFM98W.pdf
+- LoRa modules break out boards - https://github.com/lyusupov/SoftRF/wiki/SoftRF-LoRa-module
+- GPS - https://www.banggood.com/UBLOX-NEO-M8N-BN-880-Flight-Control-GPS-Module-Dual-Module-Compass-p-971082.html?rmmds=search&cur_warehouse=CN
+-Display - 
 
 ### Contributing
-- Contributor Guidelines
-- Code Style/Requirements
-- Format for commit messages
-- Thank you (name contributors)
+- No other than me are contributing so far and no guide lines are specified.
 
 ### TODO
-- Next steps
-- Features planned
-- Known bugs (shortlist)
+- Basic function are complete but code optimization is needed.
+- Next step is to be able to control an antenna tracker with telemetry link.
+- None known bugs as of now
 
 ### Contact
-- Email address
-- Google Group/mailing list (if applicable)
-- IRC or Slack (if applicable)
+- Email address: sbsivertsen@gmail.com
+- Twitter: @StigSivertsen
 
 ### License
 This project is under GNU General Public License v3.0
