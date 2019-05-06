@@ -1,9 +1,17 @@
+// Modified by Stig Sivertsen
 #include <SPI.h>
 #include <RH_RF95.h>
 #include "U8glib.h"
 
 RH_RF95 rf95;
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_NO_ACK|U8G_I2C_OPT_FAST);  // Fast I2C / TWI
+
+struct dataToSend {
+  long lat;
+  long lng;
+  int sats;
+}DataToSend;
+dataToSend dataToReceive;
 
 void setup() 
 { 
@@ -45,7 +53,6 @@ String recvStr;
 int intRSSI;
 int intSNR;
 
-
 char* spinner = "/-\\|";
 byte screenRefreshSpinnerPos = 0;
 byte gpsUpdateSpinnerPos = 0;
@@ -67,6 +74,11 @@ void loop()
     if (rf95.recv(data, &len))
     {
       recvStr = (char*)data;
+
+      dataToSend* dataToReceive = (dataToSend*)data;
+        char buf[len];
+        sprintf(buf, "%d %d %ld", dataToReceive->lat, dataToReceive->lng, dataToReceive->sats);
+        Serial.println(String("Buf:") + buf);
       
       strLat = recvStr.substring(0,9);
       strLat.toCharArray(lat, 10);
