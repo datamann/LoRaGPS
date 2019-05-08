@@ -7,11 +7,11 @@ RH_RF95 rf95;
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_NO_ACK|U8G_I2C_OPT_FAST);  // Fast I2C / TWI
 
 struct dataToSend {
-  long lat;
-  long lng;
-  int sats;
-}DataToSend;
-dataToSend dataToReceive;
+  double lat;
+  double lng;
+  char sats;
+};
+dataToSend DataToSend;
 
 void setup() 
 { 
@@ -43,13 +43,9 @@ char printSATSToScreen[8];
 char printLATToScreen[15];
 char printLNGToScreen[15];
 char printRSSIToScreen[16];
-char sats[3];
+char sats[4];
 char lat[10];
 char lng[10];
-String strLat;
-String strLng;
-String strSats;
-String recvStr;
 int intRSSI;
 int intSNR;
 
@@ -73,30 +69,18 @@ void loop()
     
     if (rf95.recv(data, &len))
     {
-      recvStr = (char*)data;
+      dataToSend* DataToSend = (dataToSend*)data;
+      dtostrf(DataToSend->lat, 2, 6, lat);
+      dtostrf(DataToSend->lng, 2, 6, lng);
+      sprintf(sats,"%s", DataToSend->sats);
 
-      dataToSend* dataToReceive = (dataToSend*)data;
-        char buf[len];
-        sprintf(buf, "%d %d %ld", dataToReceive->lat, dataToReceive->lng, dataToReceive->sats);
-        Serial.println(String("Buf:") + buf);
-      
-      strLat = recvStr.substring(0,9);
-      strLat.toCharArray(lat, 10);
-      
-      strLng = recvStr.substring(10,19);
-      strLng.toCharArray(lng, 10);
-      
-      strSats = recvStr.substring(20,22);
-      strSats.toCharArray(sats, 3);
+      // TODO: Remove or comment out when done
+      char buf[50];
+      sprintf(buf,"%s %s %s", lat, lng, sats); //(char*)
+      Serial.println(String("Buf: ") + buf);
       
       intRSSI = rf95.lastRssi(), DEC;
       intSNR = rf95.lastSNR(), DEC;
-
-      Serial.println("Lat: " + strLat);
-      Serial.println("Lng: " + strLng);
-      Serial.println(String("Sats: ") + (char*)sats);
-      Serial.println(String("RSSI: ") + intRSSI);
-      Serial.println(String("SNR: ") + intSNR);
       updateScreen();
     }
     else
@@ -115,7 +99,6 @@ void draw() {
 }
 
 void updateScreen() {
-
   sprintf(printRSSIToScreen, "Rssi:%i Snr:%i", intRSSI, intSNR);
   sprintf(printLATToScreen, "Lat:%s", lat);
   sprintf(printLNGToScreen, "Lng:%s", lng);

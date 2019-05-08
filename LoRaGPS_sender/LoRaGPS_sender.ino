@@ -19,8 +19,8 @@ char sats[4] = "***";
 struct dataToSend {
   double lat;
   double lng;
-  int sats;
-}DataToSend1;
+  char sats;
+};
 dataToSend DataToSend;
 
 void setup() 
@@ -86,37 +86,21 @@ void displayInfo()
       getSats(gps.satellites.value(), gps.satellites.isValid());
       DataToSend.lat = gps.location.lat();
       DataToSend.lng = gps.location.lng();
-      DataToSend.sats = sats;
-      
+      DataToSend.sats = (char*)sats;
       smartDelay(500);
-      String latlng = String(gps.location.lat(), 6) + "," + String(gps.location.lng(), 6) + "," + sats;
-
-      /* Code to go on receive end */
-      //char buff[sizeof(DataToSend)];
-      char buflatToString[10];
-      char buflngToString[10];
-      char latToString[10];
-      char lngToString[10];
-      /* 4 is mininum width, 2 is precision; float value is copied onto str_temp*/
-      dtostrf(DataToSend.lat, 2, 6, latToString);
-      sprintf(buflatToString,"%s", latToString);
-      dtostrf(DataToSend.lng, 2, 6, lngToString);
-      sprintf(buflngToString,"%s", lngToString);
       
-      //sprintf(buff, "%l %lf %ld", DataToSend.lat, DataToSend.lng, DataToSend.sats);
-      Serial.println(String("Buf:") + buflatToString + "-" + buflngToString);
+      // TODO: Remove or comment out when done      
+      char lat[10];
+      char lng[10];
 
-      //double latt=gps.location.lat(); 
-      Serial.println(DataToSend.lat, 6);
-      Serial.println(DataToSend.lng, 6);
-      Serial.println(DataToSend.sats);
-      
-      byte buf[31];
-      //latlng.toCharArray(buf,31);
-      //DataToSend.toCharArray(buf,64);
-      //char [] buffer = new char[sizeof(DataToSend)];
-      //char [] buffer = new char[sizeof(DataToSend)];
-      //memcpy(&buffer, &DataToSend, sizeof(DataToSend));
+      //TODO: Find formatting for sats!
+      char satts[4];
+      dtostrf(DataToSend.lat, 2, 6, lat);
+      dtostrf(DataToSend.lng, 2, 6, lng);
+      sprintf(satts,"%s", DataToSend.sats);
+      char buf[100];
+      sprintf(buf,"%s %s %s", lat, lng, satts);
+      Serial.print(String("Buf: ") + buf);
      
       //if (rf95.available()){
         rf95.send((uint8_t *)&DataToSend, sizeof(DataToSend));
@@ -124,28 +108,14 @@ void displayInfo()
         lastSendTime = now;
       //}else{
       //  Serial.println("LoRa Radio not available!");
-      //}
-      
-      //unsigned long sats = gps.satellites.value();
-      //String sats = String(gps.satellites.value(), 6);
-      /*Serial.print(gps.location.lat(), 6);
-      Serial.print(F(","));
-      Serial.print(gps.location.lng(), 6);
-      Serial.print(F(","));
-      String test = sats + String("."); 
-      Serial.print(test);*/
-      //Serial.print(F(","));
-      //Serial.print(gps.hdop.value());
-      //smartDelay(500);      
-    }else{
-      
+      //} 
+    }else{      
       Serial.print(F("INVALID"));
     }
   Serial.println();
 }
 
 static void getSats(unsigned long val, bool valid)
-//static void getSats(int val, bool valid)
 {
   int len = 3;
   if (valid)
