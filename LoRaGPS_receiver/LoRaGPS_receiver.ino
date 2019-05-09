@@ -39,11 +39,11 @@ void setup()
 }
 
 unsigned long lastScreenUpdate = 0;
-char printSATSToScreen[8];
-char printLATToScreen[15];
-char printLNGToScreen[15];
+char printSATSToScreen[7];
+char printLATToScreen[14];
+char printLNGToScreen[14];
 char printRSSIToScreen[16];
-char sats[4];
+char sats[5];
 char lat[10];
 char lng[10];
 int intRSSI;
@@ -55,7 +55,6 @@ byte gpsUpdateSpinnerPos = 0;
 
 void loop()
 {
-  //String printToScreen;
   screenRefreshSpinnerPos = (screenRefreshSpinnerPos + 1) % 4;
   updateScreen();
   
@@ -72,12 +71,12 @@ void loop()
       dataToSend* DataToSend = (dataToSend*)data;
       dtostrf(DataToSend->lat, 2, 6, lat);
       dtostrf(DataToSend->lng, 2, 6, lng);
-      sprintf(sats,"%s", DataToSend->sats);
+      sprintf(sats,"%c", DataToSend->sats);
 
       // TODO: Remove or comment out when done
-      char buf[50];
-      sprintf(buf,"%s %s %s", lat, lng, sats); //(char*)
-      Serial.println(String("Buf: ") + buf);
+      /*char buf[23];
+      sprintf(buf,"%s %s %s", lat, lng, sats);
+      Serial.println(String("Buf: ") + buf);*/
       
       intRSSI = rf95.lastRssi(), DEC;
       intSNR = rf95.lastSNR(), DEC;
@@ -102,7 +101,7 @@ void updateScreen() {
   sprintf(printRSSIToScreen, "Rssi:%i Snr:%i", intRSSI, intSNR);
   sprintf(printLATToScreen, "Lat:%s", lat);
   sprintf(printLNGToScreen, "Lng:%s", lng);
-  sprintf(printSATSToScreen, "%c %c %s", spinner[screenRefreshSpinnerPos], spinner[gpsUpdateSpinnerPos], (char*)sats);  
+  sprintf(printSATSToScreen, "%c %c %s", spinner[screenRefreshSpinnerPos], spinner[gpsUpdateSpinnerPos], sats);  
   u8g.firstPage();
   do {
     draw();

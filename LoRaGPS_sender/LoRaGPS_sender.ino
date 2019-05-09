@@ -53,27 +53,11 @@ void loop()
 {
   while (GPS_PORT.available() > 0) // Wait for serial port to be available
     if (gps.encode(GPS_PORT.read()))
-        displayInfo();
-  
-  if (millis() > 5000 && gps.charsProcessed() < 10)
-  {
-    Serial.println(F("No GPS detected: check wiring."));
-    while(true);
-  }
-  
-  /*static unsigned long lastSendTime = 0;
-  unsigned long now = millis();
-  uint8_t data[] = "Sender started";
-
-  if ( now - lastSendTime > 1000 ) {    
-    rf95.send((uint8_t*)&data, sizeof(data));
-    rf95.waitPacketSent();  
-    lastSendTime = now;
-  }else{
-    uint8_t data[] = "No GPS";
-    rf95.send(data, sizeof(data));
-    rf95.waitPacketSent();
-  }*/
+      displayInfo();
+    if (millis() > 5000 && gps.charsProcessed() < 10){
+      Serial.println(F("No GPS detected: check wiring."));
+      while(true);
+    }
 }
 
 void displayInfo()
@@ -81,37 +65,29 @@ void displayInfo()
   static unsigned long lastSendTime = 0;
   unsigned long now = millis();
   
-    if (gps.location.isValid() && now - lastSendTime > 1000){
+  if (gps.location.isValid() && now - lastSendTime > 1000){
 
-      getSats(gps.satellites.value(), gps.satellites.isValid());
-      DataToSend.lat = gps.location.lat();
-      DataToSend.lng = gps.location.lng();
-      DataToSend.sats = (char*)sats;
-      smartDelay(500);
-      
-      // TODO: Remove or comment out when done      
-      char lat[10];
-      char lng[10];
+    getSats(gps.satellites.value(), gps.satellites.isValid());
+    DataToSend.lat = gps.location.lat();
+    DataToSend.lng = gps.location.lng();
+    memcpy(&DataToSend.sats, sats, sizeof(sats));
+    smartDelay(500);
 
-      //TODO: Find formatting for sats!
-      char satts[4];
-      dtostrf(DataToSend.lat, 2, 6, lat);
-      dtostrf(DataToSend.lng, 2, 6, lng);
-      sprintf(satts,"%s", DataToSend.sats);
-      char buf[100];
-      sprintf(buf,"%s %s %s", lat, lng, satts);
-      Serial.print(String("Buf: ") + buf);
-     
-      //if (rf95.available()){
-        rf95.send((uint8_t *)&DataToSend, sizeof(DataToSend));
-        rf95.waitPacketSent();
-        lastSendTime = now;
-      //}else{
-      //  Serial.println("LoRa Radio not available!");
-      //} 
-    }else{      
-      Serial.print(F("INVALID"));
-    }
+    rf95.send((uint8_t *)&DataToSend, sizeof(DataToSend));
+    rf95.waitPacketSent();
+    lastSendTime = now;
+    
+    // TODO: Remove or comment out when done      
+    /*char lat[10];
+    char lng[10];      
+    dtostrf(DataToSend.lat, 2, 6, lat);
+    dtostrf(DataToSend.lng, 2, 6, lng);
+    char buf[23];
+    sprintf(buf,"%s %s %c", lat, lng, DataToSend.sats);
+    Serial.print(String("Buf: ") + buf);*/    
+  }else{      
+    //Serial.print(F("INVALID"));
+  }
   Serial.println();
 }
 
@@ -125,7 +101,9 @@ static void getSats(unsigned long val, bool valid)
       sats[i] = ' ';
     if (len > 0) 
       sats[len-1] = ' ';
-    //Serial.print(sats);
+
+    // TODO: Remove or comment out when done
+    //Serial.println(sats);
 }
 
 static void smartDelay(unsigned long ms)
