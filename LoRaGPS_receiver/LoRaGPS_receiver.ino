@@ -1,9 +1,17 @@
+// Modified by Stig Sivertsen
 #include <SPI.h>
 #include <RH_RF95.h>
 #include "U8glib.h"
 
 RH_RF95 rf95;
 U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_NO_ACK|U8G_I2C_OPT_FAST);  // Fast I2C / TWI
+
+struct dataToSend {
+  double lat;
+  double lng;
+  char sats;
+};
+dataToSend DataToSend;
 
 void setup() 
 { 
@@ -31,20 +39,15 @@ void setup()
 }
 
 unsigned long lastScreenUpdate = 0;
-char printSATSToScreen[8];
-char printLATToScreen[15];
-char printLNGToScreen[15];
+char printSATSToScreen[7];
+char printLATToScreen[14];
+char printLNGToScreen[14];
 char printRSSIToScreen[16];
-char sats[3];
+char sats[5];
 char lat[10];
 char lng[10];
-String strLat;
-String strLng;
-String strSats;
-String recvStr;
 int intRSSI;
 int intSNR;
-
 
 char* spinner = "/-\\|";
 byte screenRefreshSpinnerPos = 0;
@@ -52,7 +55,6 @@ byte gpsUpdateSpinnerPos = 0;
 
 void loop()
 {
-  //String printToScreen;
   screenRefreshSpinnerPos = (screenRefreshSpinnerPos + 1) % 4;
   updateScreen();
   
@@ -66,25 +68,18 @@ void loop()
     
     if (rf95.recv(data, &len))
     {
-      recvStr = (char*)data;
-      
-      strLat = recvStr.substring(0,9);
-      strLat.toCharArray(lat, 10);
-      
-      strLng = recvStr.substring(10,19);
-      strLng.toCharArray(lng, 10);
-      
-      strSats = recvStr.substring(20,22);
-      strSats.toCharArray(sats, 3);
+      dataToSend* DataToSend = (dataToSend*)data;
+      dtostrf(DataToSend->lat, 2, 6, lat);
+      dtostrf(DataToSend->lng, 2, 6, lng);
+      sprintf(sats,"%c", DataToSend->sats);
+
+      // TODO: Remove or comment out when done
+      /*char buf[23];
+      sprintf(buf,"%s %s %s", lat, lng, sats);
+      Serial.println(String("Buf: ") + buf);*/
       
       intRSSI = rf95.lastRssi(), DEC;
       intSNR = rf95.lastSNR(), DEC;
-
-      Serial.println("Lat: " + strLat);
-      Serial.println("Lng: " + strLng);
-      Serial.println(String("Sats: ") + (char*)sats);
-      Serial.println(String("RSSI: ") + intRSSI);
-      Serial.println(String("SNR: ") + intSNR);
       updateScreen();
     }
     else
@@ -103,11 +98,10 @@ void draw() {
 }
 
 void updateScreen() {
-
   sprintf(printRSSIToScreen, "Rssi:%i Snr:%i", intRSSI, intSNR);
   sprintf(printLATToScreen, "Lat:%s", lat);
   sprintf(printLNGToScreen, "Lng:%s", lng);
-  sprintf(printSATSToScreen, "%c %c %s", spinner[screenRefreshSpinnerPos], spinner[gpsUpdateSpinnerPos], (char*)sats);  
+  sprintf(printSATSToScreen, "%c %c %s", spinner[screenRefreshSpinnerPos], spinner[gpsUpdateSpinnerPos], sats);  
   u8g.firstPage();
   do {
     draw();
