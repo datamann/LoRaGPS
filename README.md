@@ -1,4 +1,4 @@
-## LoRaGPS (This REAME is work in progress)
+## LoRaGPS
 
 Sending GPS coordinates via LoRa Radio 433MHz and 868MHz
 
