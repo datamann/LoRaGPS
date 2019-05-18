@@ -1,109 +1,76 @@
 // Modified by Stig Sivertsen
-#include <SPI.h>
+//#include <SPI.h>
 #include <RH_RF95.h>
-#include "U8glib.h"
+
+// Lookup RH_RF95.h for pin Slave Select and pin interrupt ovveride.
 
 RH_RF95 rf95;
-U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_NO_ACK|U8G_I2C_OPT_FAST);  // Fast I2C / TWI
 
-struct dataToSend {
+struct dataToReceive {
   double lat;
   double lng;
   char sats;
 };
-dataToSend DataToSend;
+dataToReceive DataToReceive;
+
+char sats[5];
+char lat[10];
+char lng[10];
 
 void setup() 
-{ 
-  u8g.setColorIndex(1);
+{
   Serial.begin(9600);
   while (!Serial) ; // Wait for serial port to be available
-  if (!rf95.init())
-    Serial.println("Init failed");
-  else
-    Serial.println("Init succeeded");
-  // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
+    if (!rf95.init())
+      Serial.println("Init receiver failed");
+    else
+      Serial.println("Init receiver succeeded");
 
-    rf95.setFrequency(433.00);
-    rf95.setModemConfig(RH_RF95::Bw31_25Cr48Sf512);
+  // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
+  rf95.setFrequency(868.00);
+  rf95.setModemConfig(RH_RF95::Bw31_25Cr48Sf512);
 
   // The default transmitter power is 13dBm, using PA_BOOST.
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
   // you can set transmitter powers from 5 to 23 dBm:
-//  driver.setTxPower(23, false);
-  // If you are using Modtronix inAir4 or inAir9,or any other module which uses the
-  // transmitter RFO pins and not the PA_BOOST pins
-  // then you can configure the power transmitter power for -1 to 14 dBm and with useRFO true. 
-  // Failure to do that will result in extremely low transmit powers.
-//  driver.setTxPower(14, true);
+  //  driver.setTxPower(23, false);
+  rf95.setTxPower(13, false);
 }
 
-unsigned long lastScreenUpdate = 0;
-char printSATSToScreen[7];
-char printLATToScreen[14];
-char printLNGToScreen[14];
-char printRSSIToScreen[16];
-char sats[5];
-char lat[10];
-char lng[10];
 int intRSSI;
 int intSNR;
+unsigned long lastSendTime = 0;
 
-char* spinner = "/-\\|";
-byte screenRefreshSpinnerPos = 0;
-byte gpsUpdateSpinnerPos = 0;
+void loop(){
 
-void loop()
-{
-  screenRefreshSpinnerPos = (screenRefreshSpinnerPos + 1) % 4;
-  updateScreen();
-  
-  if (rf95.available())
-  {
-    gpsUpdateSpinnerPos = (gpsUpdateSpinnerPos + 1) % 4;  
-    
-    // Should be a message for us now   
-    uint8_t data[RH_RF95_MAX_MESSAGE_LEN];
-    uint8_t len = sizeof(data);
-    
-    if (rf95.recv(data, &len))
-    {
-      dataToSend* DataToSend = (dataToSend*)data;
-      dtostrf(DataToSend->lat, 2, 6, lat);
-      dtostrf(DataToSend->lng, 2, 6, lng);
-      sprintf(sats,"%c", DataToSend->sats);
-
-      // TODO: Remove or comment out when done
-      /*char buf[23];
-      sprintf(buf,"%s %s %s", lat, lng, sats);
-      Serial.println(String("Buf: ") + buf);*/
+  unsigned long now = millis();
+  if ( now - lastSendTime >= 1000 ) {
+    if (rf95.available()){
       
-      intRSSI = rf95.lastRssi(), DEC;
-      intSNR = rf95.lastSNR(), DEC;
-      updateScreen();
+      // Should be a message for us now
+      uint8_t data[RH_RF95_MAX_MESSAGE_LEN];
+      uint8_t len = sizeof(data);
+
+      if (rf95.recv(data, &len)){
+        dataToReceive* DataToReceive = (dataToReceive*)data;
+        dtostrf(DataToReceive->lat, 0, 6, lat);
+        dtostrf(DataToReceive->lng, 0, 6, lng);
+        sprintf(sats,"%c", DataToReceive->sats);
+        intRSSI = rf95.lastRssi(), DEC;
+        intSNR = rf95.lastSNR(), DEC;
+      
+        char buf[66];
+        sprintf(buf,"LAT: %s\, LNG: %s\, Sats: %s\, RSSI: %i\, SNR: %i", lat, lng, sats, intRSSI, intSNR);
+        Serial.println(String("Buf: ") + buf);
+      }
+      else
+      {
+        Serial.println("recv failed");
+      }
     }
-    else
-    {
-      Serial.println("recv failed");
-    }
+    else{
+      Serial.println("RF95 not available!");
+    }    
+    lastSendTime = now;
   }
-}
-
-void draw() {
-  u8g.setFont(u8g_font_unifont);
-  u8g.drawStr( 2, 10, printSATSToScreen);
-  u8g.drawStr( 2, 25, printRSSIToScreen);
-  u8g.drawStr( 2, 40, printLATToScreen);
-  u8g.drawStr( 2, 55, printLNGToScreen);
-}
-
-void updateScreen() {
-  sprintf(printRSSIToScreen, "Rssi:%i Snr:%i", intRSSI, intSNR);
-  sprintf(printLATToScreen, "Lat:%s", lat);
-  sprintf(printLNGToScreen, "Lng:%s", lng);
-  sprintf(printSATSToScreen, "%c %c %s", spinner[screenRefreshSpinnerPos], spinner[gpsUpdateSpinnerPos], sats);  
-  u8g.firstPage();
-  do {
-    draw();
-  } while( u8g.nextPage() );
 }
